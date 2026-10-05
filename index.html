@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Minhas' Timer</title>
+<title>Plain Timer</title>
+<!-- Dynamic Favicon Link -->
+<link id="dynamic-favicon" rel="icon" type="image/png" href="">
 <style>
   body {
     margin: 0;
@@ -45,7 +47,7 @@
   .info-text { font-size: 1rem; font-weight: 600; }
   .top-right-buttons { display: flex; gap: 8px; }
 
-  /* Timer & Progress Bar */
+  /* Timer Display */
   .timer-display {
     font-size: 12rem;
     font-weight: 800;
@@ -54,59 +56,79 @@
     margin-bottom: 20px;
   }
 
-  .progress-container {
-    width: 80%;
-    max-width: 500px;
-    height: 24px;
-    background-color: rgba(255, 255, 255, 0.3);
-    border-radius: 12px;
-    margin-bottom: 30px;
-    overflow: hidden;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
-  }
-
-  .progress-bar {
-    height: 100%;
-    width: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    transition: width 1s linear;
-  }
-
-  /* Controls */
+  /* Controls & Merged Progress Button */
   .controls-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 20px;
+    gap: 15px;
   }
 
-  button {
-    padding: 10px 20px;
-    font-size: 1.1rem;
+  .progress-btn {
+    position: relative;
+    width: 80vw;
+    max-width: 500px;
+    height: 60px;
+    border: none;
+    border-radius: 30px;
+    background-color: rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.1s, box-shadow 0.1s;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .progress-btn:active {
+    transform: scale(0.98);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  }
+
+  .progress-bar {
+    position: absolute;
+    top: 0;
+    left: 0; 
+    height: 100%;
+    width: 0%;
+    background-color: rgba(0, 0, 0, 0.2); 
+    transition: width 1s linear;
+    z-index: 1;
+  }
+
+  .btn-text {
+    position: relative;
+    z-index: 2;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #1f2937;
+  }
+  
+  #end-time {
+    font-size: 0.95rem;
+    font-weight: 600;
+    opacity: 0.8;
+    min-height: 1.5rem;
+  }
+
+  /* Standard Menu Buttons */
+  button.menu-btn {
+    padding: 6px 12px;
+    font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
     border: none;
     border-radius: 8px;
-    background-color: #ffffff;
+    background-color: #e5e7eb;
     box-shadow: 0 2px 4px rgba(0,0,0,0.15);
     transition: transform 0.1s, box-shadow 0.1s;
   }
 
-  button:active { 
+  button.menu-btn:active { 
     transform: scale(0.95);
     box-shadow: 0 1px 2px rgba(0,0,0,0.15);
-  }
-
-  .main-btn {
-    padding: 15px 40px;
-    font-size: 1.3rem;
-    border-radius: 50px;
-  }
-
-  .menu-btn {
-    font-size: 0.9rem;
-    padding: 6px 12px;
-    background-color: #e5e7eb;
   }
 
   /* Setup Menu & Presets */
@@ -129,6 +151,9 @@
     font-size: 0.85rem;
     padding: 4px 10px;
     background-color: #f3f4f6;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
   }
 
   .time-inputs {
@@ -158,7 +183,7 @@
     cursor: pointer;
   }
   
-  .keyboard-hint {
+  .footer {
     position: absolute;
     bottom: 10px;
     left: 50%;
@@ -168,20 +193,19 @@
   }
 </style>
 </head>
+
 <body>
 
-<!-- Top Left: Single Line Info -->
 <div class="top-left-panel">
   <div class="info-text">
-    <span id="location">Locating...</span> - <span id="clock">00:00:00</span>
+    <span id="location">Local Time</span> - <span id="clock">00:00:00</span>
   </div>
 </div>
 
-<!-- Top Right: Utilities & Setup -->
 <div class="top-right-panel">
   <div class="top-right-buttons">
-    <button class="menu-btn" onclick="toggleSetup()">⚙️ Setup</button>
-    <button class="menu-btn" onclick="resetTimer()">↺ Reset</button>
+    <button class="menu-btn" onclick="toggleSetup()" title="Timer Setup">☰</button>
+    <button class="menu-btn" onclick="resetTimer()" title="Reset Timer">↺</button>
     <button class="menu-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
   </div>
   
@@ -193,7 +217,7 @@
     </div>
 
     <label class="audio-toggle">
-      <input type="checkbox" id="audio-enabled" checked> Enable Audio Alert
+      <input type="checkbox" id="audio-enabled" unchecked> Enable Audio Alert
     </label>
 
     <div class="time-inputs">
@@ -205,69 +229,82 @@
   </div>
 </div>
 
-<!-- Main Timer -->
 <div class="timer-display" id="timer">00:00:00</div>
 
-<!-- Progress Bar -->
-<div class="progress-container">
-  <div class="progress-bar" id="progress"></div>
-</div>
-
-<!-- Controls -->
 <div class="controls-wrapper">
-  <button id="toggle-btn" class="main-btn" onclick="toggleTimer()">▶ Start</button>
-  <div class="keyboard-hint">[Space] Play/Pause • [R] Reset • <a href="https://github.com/MinhasKamal/Timer" target="_blank">Timer</a> by <a href="https://minhaskamal.github.io" target="_blank">Minhas Kamal</a></div>
+  <button class="progress-btn" onclick="toggleTimer()">
+    <div class="progress-bar" id="progress"></div>
+    <span class="btn-text" id="toggle-btn">▶ Start</span>
+  </button>
+  
+  <div id="end-time"></div>
+  
+  <div class="footer">[Space] Play/Pause • [R] Reset • <a href="https://github.com/MinhasKamal/PlainTimer" target="_blank">Plain Timer</a> by <a href="https://minhaskamal.github.io" target="_blank">Minhas Kamal</a></div>
 </div>
 
 <script>
-  // State Variables
   let totalTime = parseInt(localStorage.getItem('savedTimerLength')) || 60; 
   let timeLeft = totalTime;
   let timerInterval = null;
 
-  // --- Advanced Melodic Audio Engine (Westminster Chimes) ---
+  // --- Dynamic Favicon Generator ---
+  function updateFavicon(ratio, color) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 32;
+    canvas.height = 32;
+    const ctx = canvas.getContext('2d');
+
+    // 1. Draw light grey background circle
+    ctx.beginPath();
+    ctx.arc(16, 16, 16, 0, 2 * Math.PI);
+    ctx.fillStyle = '#e5e7eb';
+    ctx.fill();
+
+    // 2. Draw the colored pie slice based on ratio
+    if (ratio > 0) {
+      ctx.beginPath();
+      ctx.moveTo(16, 16);
+      // Start at -90 degrees (top center), draw arc based on remaining percentage
+      ctx.arc(16, 16, 16, -Math.PI / 2, -Math.PI / 2 + (2 * Math.PI * ratio));
+      ctx.fillStyle = color;
+      ctx.fill();
+    }
+
+    // 3. Convert canvas to Image URL and update the link tag
+    document.getElementById('dynamic-favicon').href = canvas.toDataURL('image/png');
+  }
+
+  // --- Advanced Melodic Audio Engine ---
   function playAlarm() {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    
-    // Function to create a soft, echoing bell sound
     const playBell = (freq, time, duration) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
-      
-      osc.type = 'sine'; // Smooth bell tone
+      osc.type = 'sine';
       osc.frequency.value = freq;
-      
-      // Envelope: quick attack, slow fade out
       gain.gain.setValueAtTime(0, time);
-      gain.gain.linearRampToValueAtTime(0.8, time + 0.05); // Strike the bell
-      gain.gain.exponentialRampToValueAtTime(0.01, time + duration); // Ring out
-      
+      gain.gain.linearRampToValueAtTime(0.8, time + 0.05); 
+      gain.gain.exponentialRampToValueAtTime(0.01, time + duration); 
       osc.connect(gain);
       gain.connect(ctx.destination);
-      
       osc.start(time);
       osc.stop(time + duration);
     };
 
     const now = ctx.currentTime;
-    
-    // First phrase (E, C, D, G)
-    playBell(659.25, now, 1.5);        // E5
-    playBell(523.25, now + 0.5, 1.5);  // C5
-    playBell(587.33, now + 1.0, 1.5);  // D5
-    playBell(392.00, now + 1.5, 2.5);  // G4 (Low)
-    
-    // Second phrase (G, D, E, C)
-    playBell(392.00, now + 3.0, 1.5);  // G4 (Low)
-    playBell(587.33, now + 3.5, 1.5);  // D5
-    playBell(659.25, now + 4.0, 1.5);  // E5
-    playBell(523.25, now + 4.5, 3.5);  // C5 (Final Ring)
+    playBell(659.25, now, 1.5);
+    playBell(523.25, now + 0.5, 1.5);
+    playBell(587.33, now + 1.0, 1.5);
+    playBell(392.00, now + 1.5, 2.5);
+    playBell(392.00, now + 3.0, 1.5);
+    playBell(587.33, now + 3.5, 1.5);
+    playBell(659.25, now + 4.0, 1.5);
+    playBell(523.25, now + 4.5, 3.5);
   }
 
   // --- Keyboard Shortcuts ---
   document.addEventListener('keydown', (e) => {
     if (e.target.tagName === 'INPUT') return; 
-    
     if (e.code === 'Space') {
       e.preventDefault(); 
       toggleTimer();
@@ -276,7 +313,7 @@
     }
   });
 
-  // --- Silent IP-Based Location Fetching ---
+  // --- Location Fetching ---
   async function fetchLocationSilent() {
     const locElement = document.getElementById('location');
     try {
@@ -332,7 +369,6 @@
   function setPreset(seconds) {
     applyNewTime(seconds);
     toggleSetup(); 
-    //if (!timerInterval) toggleTimer(); 
   }
 
   // --- Core Timer Logic ---
@@ -346,18 +382,34 @@
   function updateDisplay() {
     const timeString = formatTime(timeLeft);
     document.getElementById('timer').innerText = timeString;
-    document.title = timerInterval ? `${timeString}` : "Minhas' Timer";
+    document.title = timerInterval ? `${timeString}` : "Plain Timer";
+    
+    const endTimeDiv = document.getElementById('end-time');
+    if (timerInterval && timeLeft > 0) {
+      const projectedEnd = new Date(Date.now() + (timeLeft * 1000));
+      endTimeDiv.innerText = `Ends at ${projectedEnd.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit'})}`;
+    } else {
+      endTimeDiv.innerText = ''; 
+    }
+
     updateBackgroundAndProgress();
   }
 
   function updateBackgroundAndProgress() {
     const ratio = timeLeft / totalTime;
-    const body = document.body;
-    document.getElementById('progress').style.width = (ratio * 100) + '%';
+    const elapsedRatio = 1 - ratio; 
+    
+    document.getElementById('progress').style.width = (elapsedRatio * 100) + '%';
 
-    if (ratio > 0.5) body.style.backgroundColor = '#4ade80';
-    else if (ratio > 0.2) body.style.backgroundColor = '#facc15';
-    else body.style.backgroundColor = '#f87171';
+    let currentColor = '#4ade80';
+    if (ratio > 0.5) currentColor = '#4ade80'; // Green
+    else if (ratio > 0.2) currentColor = '#facc15'; // Yellow
+    else currentColor = '#f87171'; // Red
+    
+    document.body.style.backgroundColor = currentColor;
+    
+    // Send the current ratio and color to the Favicon Generator
+    updateFavicon(ratio, currentColor);
   }
 
   function toggleTimer() {
@@ -369,7 +421,6 @@
       updateDisplay(); 
     } else if (timeLeft > 0) {
       btn.innerHTML = '⏸ Pause';
-      updateDisplay(); 
       timerInterval = setInterval(() => {
         timeLeft--;
         updateDisplay();
@@ -377,13 +428,16 @@
         if (timeLeft <= 0) {
           clearInterval(timerInterval);
           timerInterval = null;
-          btn.innerHTML = '▶ Start';
+          btn.innerHTML = '↺ Reset'; 
           
           if (document.getElementById('audio-enabled').checked) {
             playAlarm(); 
           }
         }
       }, 1000);
+      updateDisplay(); 
+    } else {
+      resetTimer();
     }
   }
 
