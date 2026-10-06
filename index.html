@@ -256,7 +256,7 @@
 
 <div class="top-right-panel">
   <div class="top-right-buttons">
-    <button class="menu-btn" onclick="toggleSetup()" title="Timer Setup">☰</button>
+    <button class="menu-btn" onclick="toggleSetup()" title="Menu">☰</button>
     <button class="menu-btn" onclick="resetTimer()" title="Reset Timer">↺</button>
     <button class="menu-btn" onclick="toggleFullscreen()" title="Toggle Fullscreen">⛶</button>
   </div>
@@ -271,7 +271,7 @@
     </div>
 
     <label class="audio-toggle">
-      <input type="checkbox" id="alert-enabled" checked> Audio Alert
+      <input type="checkbox" id="alert-enabled" onchange="localStorage.setItem('PlainTimer_AudioAlert', this.checked)" checked> Audio Alert
     </label>
       
     <div class="presets">
@@ -285,7 +285,7 @@
       <input type="number" id="input-h" min="0" placeholder="H">h 
       <input type="number" id="input-m" min="0" max="59" placeholder="M">m 
       <input type="number" id="input-s" min="0" max="59" placeholder="S">s
-      <button class="menu-btn" onclick="setTime()" style="margin-left: 5px;">Set</button>
+      <button class="menu-btn" onclick="setTime()" style="margin-left: 5px;" title="Set Time">Set</button>
     </div>
   </div>
 </div>
@@ -304,13 +304,19 @@
 </div>
 
 <script>
-  let totalTime = parseInt(localStorage.getItem('savedTimerLength')) || 60; 
+  let totalTime = parseInt(localStorage.getItem('PlainTimer_TimerLength')) || 60; 
   let timeLeft = totalTime;
   let timerInterval = null;
   
-  let currentTheme = localStorage.getItem('savedTheme') || 'plain';
+  let currentTheme = localStorage.getItem('PlainTimer_Theme') || 'plain';
   document.querySelector(`input[name="theme"][value="${currentTheme}"]`).checked = true;
 
+  // Audio Variables
+  const savedAudio = localStorage.getItem('PlainTimer_AudioAlert');
+  if (savedAudio !== null) {
+    document.getElementById('alert-enabled').checked = (savedAudio === 'true');
+  }
+    
   const themeColors = {
     plain: { green: '#4ade80', yellow: '#facc15', red: '#f87171' },
     light: { green: '#bbf7d0', yellow: '#fef08a', red: '#fecaca' },
@@ -328,7 +334,7 @@
 
   function changeTheme(theme) {
     currentTheme = theme;
-    localStorage.setItem('savedTheme', theme);
+    localStorage.setItem('PlainTimer_Theme', theme);
     applyThemeClasses();
     updateDisplay(); 
   }
@@ -444,7 +450,7 @@
   function applyNewTime(seconds) {
     if (seconds > 0) {
       totalTime = seconds;
-      localStorage.setItem('savedTimerLength', totalTime);
+      localStorage.setItem('PlainTimer_TimerLength', totalTime);
       resetTimer();
     }
   }
