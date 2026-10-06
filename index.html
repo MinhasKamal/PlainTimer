@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Plain Timer</title>
-<!-- Dynamic Favicon Link -->
 <link id="dynamic-favicon" rel="icon" type="image/png" href="">
 <style>
   body {
@@ -15,13 +14,12 @@
     justify-content: center;
     align-items: center;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    transition: background-color 1s ease-in-out;
-    background-color: #4ade80; /* Starting Green */
+    transition: background-color 1s ease-in-out, color 0.3s;
+    background-color: #4ade80; /* Plain Green Default */
     color: #1f2937;
     overflow: hidden;
   }
   
-  /* Top Corner Panels */
   .top-left-panel, .top-right-panel {
     position: absolute;
     top: 20px;
@@ -30,6 +28,7 @@
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     backdrop-filter: blur(5px);
     z-index: 10;
+    transition: background 0.3s;
   }
 
   .top-left-panel {
@@ -47,7 +46,6 @@
   .info-text { font-size: 1rem; font-weight: 600; }
   .top-right-buttons { display: flex; gap: 8px; }
 
-  /* Timer Display */
   .timer-display {
     font-size: 12rem;
     font-weight: 800;
@@ -56,7 +54,6 @@
     margin-bottom: 20px;
   }
 
-  /* Controls & Merged Progress Button */
   .controls-wrapper {
     display: flex;
     flex-direction: column;
@@ -75,7 +72,7 @@
     cursor: pointer;
     overflow: hidden;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    transition: transform 0.1s, box-shadow 0.1s;
+    transition: transform 0.1s, box-shadow 0.1s, background-color 0.3s;
     padding: 0;
     display: flex;
     justify-content: center;
@@ -94,7 +91,7 @@
     height: 100%;
     width: 0%;
     background-color: rgba(0, 0, 0, 0.2); 
-    transition: width 1s linear;
+    transition: width 1s linear, background-color 0.3s;
     z-index: 1;
   }
 
@@ -104,6 +101,7 @@
     font-size: 1.3rem;
     font-weight: 600;
     color: #1f2937;
+    transition: color 0.3s;
   }
   
   #end-time {
@@ -113,7 +111,6 @@
     min-height: 1.5rem;
   }
 
-  /* Standard Menu Buttons */
   button.menu-btn {
     padding: 6px 12px;
     font-size: 0.9rem;
@@ -122,8 +119,9 @@
     border: none;
     border-radius: 8px;
     background-color: #e5e7eb;
+    color: #1f2937;
     box-shadow: 0 2px 4px rgba(0,0,0,0.15);
-    transition: transform 0.1s, box-shadow 0.1s;
+    transition: transform 0.1s, box-shadow 0.1s, background-color 0.3s, color 0.3s;
   }
 
   button.menu-btn:active { 
@@ -151,8 +149,23 @@
     font-size: 0.85rem;
     padding: 4px 10px;
     background-color: #f3f4f6;
+    color: #1f2937;
     border: none;
     border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+  }
+
+  .theme-selector {
+    margin-bottom: 15px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .theme-selector label {
     cursor: pointer;
   }
 
@@ -165,12 +178,13 @@
   }
 
   input[type="number"] {
-    width: 45px;
+    width: 55px;
     padding: 6px;
     border: 1px solid #d1d5db;
     border-radius: 4px;
     font-size: 1rem;
     text-align: center;
+    transition: background-color 0.3s, color 0.3s;
   }
 
   .audio-toggle {
@@ -189,7 +203,45 @@
     left: 50%;
     transform: translateX(-50%);
     font-size: 0.85rem;
-    opacity: 0.5;
+    opacity: 0.7;
+    white-space: nowrap;
+  }
+
+  body.dark-mode {
+    color: #f3f4f6;
+  }
+  body.dark-mode .timer-display {
+    text-shadow: 0 4px 6px rgba(0,0,0,0.3);
+  }
+  body.dark-mode .top-left-panel,
+  body.dark-mode .top-right-panel {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 0.1);
+  }
+  body.dark-mode .btn-text {
+    color: #f9fafb;
+  }
+  body.dark-mode .progress-btn {
+    background-color: rgba(0, 0, 0, 0.3);
+  }
+  body.dark-mode .progress-bar {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+  body.dark-mode button.menu-btn,
+  body.dark-mode .preset-btn {
+    background-color: #374151;
+    color: #f9fafb;
+  }
+  body.dark-mode input[type="number"] {
+    background-color: #374151;
+    color: #f9fafb;
+    border-color: #4b5563;
+  }
+  body.dark-mode #setup-menu {
+    border-top-color: #4b5563;
+  }
+  body.dark-mode a {
+    color: #93c5fd;
   }
 </style>
 </head>
@@ -210,22 +262,31 @@
   </div>
   
   <div id="setup-menu">
+
+    <div class="theme-selector">
+      <strong>Theme:</strong>
+      <label><input type="radio" name="theme" value="plain" onchange="changeTheme('plain')"> Plain</label>
+      <label><input type="radio" name="theme" value="light" onchange="changeTheme('light')"> Light</label>
+      <label><input type="radio" name="theme" value="dark" onchange="changeTheme('dark')"> Dark</label>
+    </div>
+
+    <label class="audio-toggle">
+      <input type="checkbox" id="audio-enabled" checked> Enable Audio Alert
+    </label>
+      
     <div class="presets">
-      <button class="preset-btn" onclick="setPreset(600)">10m</button>
+      <button class="preset-btn" onclick="setPreset(300)">5m</button>
+      <button class="preset-btn" onclick="setPreset(600)">15m</button>
       <button class="preset-btn" onclick="setPreset(1800)">30m</button>
       <button class="preset-btn" onclick="setPreset(3600)">60m</button>
     </div>
 
-    <label class="audio-toggle">
-      <input type="checkbox" id="audio-enabled" unchecked> Enable Audio Alert
-    </label>
-
     <div class="time-inputs">
-      <input type="number" id="input-h" value="0" min="0" placeholder="H">h 
-      <input type="number" id="input-m" value="1" min="0" max="59" placeholder="M">m 
-      <input type="number" id="input-s" value="0" min="0" max="59" placeholder="S">s
+      <input type="number" id="input-h" min="0" placeholder="H">h 
+      <input type="number" id="input-m" min="0" max="59" placeholder="M">m 
+      <input type="number" id="input-s" min="0" max="59" placeholder="S">s
+      <button class="menu-btn" onclick="setTime()" style="margin-left: 5px;">Set</button>
     </div>
-    <button class="menu-btn" onclick="setTime()">Apply</button>
   </div>
 </div>
 
@@ -246,6 +307,31 @@
   let totalTime = parseInt(localStorage.getItem('savedTimerLength')) || 60; 
   let timeLeft = totalTime;
   let timerInterval = null;
+  
+  let currentTheme = localStorage.getItem('savedTheme') || 'plain';
+  document.querySelector(`input[name="theme"][value="${currentTheme}"]`).checked = true;
+
+  const themeColors = {
+    plain: { green: '#4ade80', yellow: '#facc15', red: '#f87171' },
+    light: { green: '#bbf7d0', yellow: '#fef08a', red: '#fecaca' },
+    dark:  { green: '#166534', yellow: '#854d0e', red: '#991b1b' } 
+  };
+
+  function applyThemeClasses() {
+    if (currentTheme === 'dark') {
+      document.body.classList.add('dark-mode');
+    } else {
+      document.body.classList.remove('dark-mode');
+    }
+  }
+  applyThemeClasses();
+
+  function changeTheme(theme) {
+    currentTheme = theme;
+    localStorage.setItem('savedTheme', theme);
+    applyThemeClasses();
+    updateDisplay(); 
+  }
 
   // --- Dynamic Favicon Generator ---
   function updateFavicon(ratio, color) {
@@ -254,23 +340,19 @@
     canvas.height = 32;
     const ctx = canvas.getContext('2d');
 
-    // 1. Draw light grey background circle
     ctx.beginPath();
     ctx.arc(16, 16, 16, 0, 2 * Math.PI);
-    ctx.fillStyle = '#e5e7eb';
+    ctx.fillStyle = currentTheme === 'dark' ? '#374151' : '#e5e7eb';
     ctx.fill();
 
-    // 2. Draw the colored pie slice based on ratio
     if (ratio > 0) {
       ctx.beginPath();
       ctx.moveTo(16, 16);
-      // Start at -90 degrees (top center), draw arc based on remaining percentage
       ctx.arc(16, 16, 16, -Math.PI / 2, -Math.PI / 2 + (2 * Math.PI * ratio));
       ctx.fillStyle = color;
       ctx.fill();
     }
 
-    // 3. Convert canvas to Image URL and update the link tag
     document.getElementById('dynamic-favicon').href = canvas.toDataURL('image/png');
   }
 
@@ -284,7 +366,7 @@
       osc.frequency.value = freq;
       gain.gain.setValueAtTime(0, time);
       gain.gain.linearRampToValueAtTime(0.8, time + 0.05); 
-      gain.gain.exponentialRampToValueAtTime(0.01, time + duration); 
+      gain.exponentialRampToValueAtTime(0.01, time + duration); 
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start(time);
@@ -347,7 +429,16 @@
   // --- Setup & Presets ---
   function toggleSetup() {
     const menu = document.getElementById('setup-menu');
-    menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+    
+    // Sync current values before showing
+    if (menu.style.display !== 'block') {
+      document.getElementById('input-h').value = Math.floor(totalTime / 3600);
+      document.getElementById('input-m').value = Math.floor((totalTime % 3600) / 60);
+      document.getElementById('input-s').value = totalTime % 60;
+      menu.style.display = 'block';
+    } else {
+      menu.style.display = 'none';
+    }
   }
 
   function applyNewTime(seconds) {
@@ -363,12 +454,15 @@
     const m = parseInt(document.getElementById('input-m').value) || 0;
     const s = parseInt(document.getElementById('input-s').value) || 0;
     applyNewTime((h * 3600) + (m * 60) + s);
-    toggleSetup();
+    
+    const menu = document.getElementById('setup-menu');
+    menu.style.display = 'none';
   }
 
   function setPreset(seconds) {
     applyNewTime(seconds);
-    toggleSetup(); 
+    const menu = document.getElementById('setup-menu');
+    menu.style.display = 'none';
   }
 
   // --- Core Timer Logic ---
@@ -387,7 +481,7 @@
     const endTimeDiv = document.getElementById('end-time');
     if (timerInterval && timeLeft > 0) {
       const projectedEnd = new Date(Date.now() + (timeLeft * 1000));
-      endTimeDiv.innerText = `Ends at ${projectedEnd.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit'})}`;
+      endTimeDiv.innerText = `Ends at ${projectedEnd.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', second: '2-digit' })}`;
     } else {
       endTimeDiv.innerText = ''; 
     }
@@ -401,14 +495,15 @@
     
     document.getElementById('progress').style.width = (elapsedRatio * 100) + '%';
 
-    let currentColor = '#4ade80';
-    if (ratio > 0.5) currentColor = '#4ade80'; // Green
-    else if (ratio > 0.2) currentColor = '#facc15'; // Yellow
-    else currentColor = '#f87171'; // Red
+    const activePalette = themeColors[currentTheme];
+    let currentColor = activePalette.green;
+    
+    if (ratio > 0.5) currentColor = activePalette.green;
+    else if (ratio > 0.2) currentColor = activePalette.yellow;
+    else currentColor = activePalette.red;
     
     document.body.style.backgroundColor = currentColor;
     
-    // Send the current ratio and color to the Favicon Generator
     updateFavicon(ratio, currentColor);
   }
 
