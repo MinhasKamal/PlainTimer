@@ -199,11 +199,11 @@
   
   .footer {
     position: absolute;
-    bottom: 10px;
+    bottom: 5px;
     left: 50%;
     transform: translateX(-50%);
     font-size: 0.85rem;
-    opacity: 0.7;
+    opacity: 0.5;
     white-space: nowrap;
   }
 
@@ -216,7 +216,7 @@
   body.dark-mode .top-left-panel,
   body.dark-mode .top-right-panel {
     background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
   body.dark-mode .btn-text {
     color: #f9fafb;
@@ -271,7 +271,7 @@
     </div>
 
     <label class="audio-toggle">
-      <input type="checkbox" id="audio-enabled" checked> Enable Audio Alert
+      <input type="checkbox" id="alert-enabled" checked> Audio Alert
     </label>
       
     <div class="presets">
@@ -366,7 +366,7 @@
       osc.frequency.value = freq;
       gain.gain.setValueAtTime(0, time);
       gain.gain.linearRampToValueAtTime(0.8, time + 0.05); 
-      gain.exponentialRampToValueAtTime(0.01, time + duration); 
+      gain.gain.exponentialRampToValueAtTime(0.01, time + duration); 
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start(time);
@@ -525,7 +525,7 @@
           timerInterval = null;
           btn.innerHTML = '↺ Reset'; 
           
-          if (document.getElementById('audio-enabled').checked) {
+          if (document.getElementById('alert-enabled').checked) {
             playAlarm(); 
           }
         }
